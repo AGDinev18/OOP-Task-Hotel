@@ -88,6 +88,7 @@ Date& Date::operator=(const std::string& dateStr)
 	{
 		throw std::invalid_argument("Such date does not exist!");
 	}
+	return *this;
 }
 
 std::string Date::toString() const
