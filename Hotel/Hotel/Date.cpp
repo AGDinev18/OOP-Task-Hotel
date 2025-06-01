@@ -1,14 +1,15 @@
 #include "Date.h"
 #include <stdexcept>
 
-bool Date::isLeapYear(const int y) const
+bool Date::isLeapYear(const unsigned short int& y) const
 {
 	return (y % 4 == 0 && y % 100 != 0) || (y % 400 == 0);
 }
 
-int Date::daysInMonth(const int m, const int y) const
+int Date::daysInMonth(const unsigned short int& m, const unsigned short int& y) const
 {
-	switch (m) {
+	switch (m)
+	{
 	case 1: case 3: case 5: case 7: case 8: case 10: case 12:
 		return 31;
 	case 4: case 6: case 9: case 11:
@@ -20,16 +21,16 @@ int Date::daysInMonth(const int m, const int y) const
 	}
 }
 
-bool Date::isValid(const int y, const int m, const int d) const
+bool Date::isValid(const unsigned short int& y, const unsigned short int& m, const unsigned short int& d) const
 {
-	if (y < 1900 || m < 1 || m > 12 || d<1 || d>31)
+	if (y < 1900 || m < 1 || m > 12 || d < 1 || d>31)
 		return false;
 	return d >= 1 && d <= daysInMonth(m, y);
 }
 
 Date::Date() : year(0), month(0), day(0) {}
 
-Date::Date(int y, int m, int d)
+Date::Date(const unsigned short int& y, const unsigned short int& m, const unsigned short int& d)
 {
 	if (isValid(y, m, d))
 	{
@@ -42,20 +43,20 @@ Date::Date(int y, int m, int d)
 		throw std::invalid_argument("Such date does not exist!");
 	}
 }
+
 Date::Date(const std::string& dateStr)
 {
 	if (dateStr.length() != 10 || dateStr[4] != '-' || dateStr[7] != '-')
 	{
 		throw std::invalid_argument("Invalid date format (expected YYYY-MM-DD)");
 	}
-
 	try
 	{
-		year = std::stoi(dateStr.substr(0, 4));
-		month = std::stoi(dateStr.substr(5, 2));
-		day = std::stoi(dateStr.substr(8, 2));
+		year = static_cast<unsigned short int>(std::stoi(dateStr.substr(0, 4)));
+		month = static_cast<unsigned short int>(std::stoi(dateStr.substr(5, 2)));
+		day = static_cast<unsigned short int>(std::stoi(dateStr.substr(8, 2)));
 	}
-	catch (...)
+	catch (const std::exception&)
 	{
 		throw std::invalid_argument("Invalid number for year/month/day");
 	}
@@ -72,14 +73,13 @@ Date& Date::operator=(const std::string& dateStr)
 	{
 		throw std::invalid_argument("Invalid date format (expected YYYY-MM-DD)");
 	}
-
 	try
 	{
-		year = std::stoi(dateStr.substr(0, 4));
-		month = std::stoi(dateStr.substr(5, 2));
-		day = std::stoi(dateStr.substr(8, 2));
+		year = static_cast<unsigned short int>(std::stoi(dateStr.substr(0, 4)));
+		month = static_cast<unsigned short int>(std::stoi(dateStr.substr(5, 2)));
+		day = static_cast<unsigned short int>(std::stoi(dateStr.substr(8, 2)));
 	}
-	catch (...)
+	catch (const std::exception&)
 	{
 		throw std::invalid_argument("Invalid number for year/month/day");
 	}
@@ -88,6 +88,7 @@ Date& Date::operator=(const std::string& dateStr)
 	{
 		throw std::invalid_argument("Such date does not exist!");
 	}
+
 	return *this;
 }
 
@@ -115,7 +116,7 @@ void Date::print() const
 	std::cout << toString() << std::endl;
 }
 
-void Date::setDate(int y, int m, int d)
+void Date::setDate(const unsigned short int& y, const unsigned short int& m, const unsigned short int& d)
 {
 	if (isValid(y, m, d))
 	{
@@ -127,4 +128,39 @@ void Date::setDate(int y, int m, int d)
 	{
 		throw std::invalid_argument("Such date does not exist!");
 	}
+}
+
+unsigned short int Date::getYear() const { return year; }
+unsigned short int Date::getMonth() const { return month; }
+unsigned short int Date::getDay() const { return day; }
+
+bool Date::operator<(const Date& other) const
+{
+	if (year != other.year) return year < other.year;
+	if (month != other.month) return month < other.month;
+	return day < other.day;
+}
+bool Date::operator==(const Date& other) const
+{
+	return year == other.year && month == other.month && day == other.day;
+}
+
+bool Date::operator!=(const Date& other) const
+{
+	return !(*this == other);
+}
+
+bool Date::operator<=(const Date& other) const
+{
+	return *this < other || *this == other;
+}
+
+bool Date::operator>(const Date& other) const
+{
+	return !(*this <= other);
+}
+
+bool Date::operator>=(const Date& other) const
+{
+	return !(*this < other);
 }

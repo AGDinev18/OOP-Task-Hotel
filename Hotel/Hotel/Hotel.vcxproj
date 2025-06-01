@@ -128,10 +128,17 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Date.cpp" />
+    <ClCompile Include="FileCommands.cpp" />
     <ClCompile Include="Hotel.cpp" />
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Room.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Booking.h" />
     <ClInclude Include="Date.h" />
+    <ClInclude Include="FileCommands.h" />
+    <ClInclude Include="Hotel.h" />
+    <ClInclude Include="Room.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
