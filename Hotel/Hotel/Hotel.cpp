@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <sstream>
 
 bool Hotel::checkIfRoomExists(unsigned short int roomNumber)
 {
@@ -224,9 +225,11 @@ void Hotel::unavailable(unsigned short int roomNumber, const Date& from, const D
 void Hotel::openFile(const std::string& fileName)
 {
 	std::ifstream file(fileName);
+
 	if (!file.is_open())
 	{
 		std::ofstream createFile(fileName);
+
 		if (!createFile)
 		{
 			std::cout << "Could not create file!\n";
@@ -242,33 +245,45 @@ void Hotel::openFile(const std::string& fileName)
 	rooms.clear();
 	bookings.clear();
 
-	unsigned int roomCount = 0;
-	file >> roomCount;
-	for (unsigned int i = 0; i < roomCount; ++i)
+	std::string line;
+	while (std::getline(file, line))
 	{
+		if (line == "#BOOKINGS#")
+			break;
+
+		std::istringstream iss(line);
 		unsigned short int roomNumber, beds;
-		file >> roomNumber >> beds;
+
+		if (!(iss >> roomNumber >> beds))
+		{
+			std::cout << "Error reading room data.\n";
+			file.close();
+			exit(1);
+		}
 		rooms.emplace_back(roomNumber, beds);
 	}
 
-	unsigned int bookingCount = 0;
-	file >> bookingCount;
-	for (unsigned int i = 0; i < bookingCount; ++i)
+	while (std::getline(file, line))
 	{
+		std::istringstream iss(line);
 		unsigned short int roomNumber, guests;
-		std::string fromStr, toStr, note;
-		bool active;
+		std::string fromStr, toStr, message;
+		bool availability;
 
-		file >> roomNumber >> fromStr >> toStr >> guests >> active;
-		std::getline(file, note);
-		if (!note.empty() && note[0] == ' ') note.erase(0, 1);
+		if (!(iss >> roomNumber >> fromStr >> toStr >> guests >> availability))
+		{
+			std::cout << "Error reading booking data.\n";
+			file.close();
+			exit(1);
+		}
+		std::getline(iss, message);
+		if (!message.empty() && message[0] == ' ') message.erase(0, 1);
 
-		Date from(fromStr);
-		Date to(toStr);
-		bookings.emplace_back(roomNumber, from, to, note, guests, active);
+		bookings.emplace_back(roomNumber, Date(fromStr), Date(toStr), message, guests, availability);
 	}
 
 	file.close();
+	currentFileName = fileName;
 	std::cout << "Successfully opened " << currentFileName << "\n";
 }
 
@@ -287,19 +302,19 @@ void Hotel::saveFile(const std::string& fileName) const
 	}
 
 	std::ofstream file(targetFile);
+
 	if (!file.is_open())
 	{
 		std::cout << "Could not save to file " << targetFile << "\n";
 		return;
 	}
 
-	file << rooms.size() << "\n";
 	for (const auto& room : rooms)
 	{
 		file << room.getNumber() << " " << room.getBeds() << "\n";
 	}
 
-	file << bookings.size() << "\n";
+	file << "#BOOKINGS#\n";
 
 	for (const auto& booking : bookings)
 	{
@@ -319,6 +334,6 @@ void Hotel::closeFile()
 {
 	rooms.clear();
 	bookings.clear();
+	std::cout << "Successfully closed " << currentFileName << "\n";
 	currentFileName.clear();
-	std::cout << "Data cleared and file closed.\n";
 }
