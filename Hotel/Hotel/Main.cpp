@@ -1,10 +1,8 @@
-#include <iostream>
-#include "Booking.h"
-#include "Date.h"
-#include "Room.h"
-#include <vector>
-#include <iostream>
+#include "UI.h"
+
 int main()
 {
-	
+    UI ui;
+    ui.run();
+    return 0;
 }
