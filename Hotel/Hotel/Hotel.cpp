@@ -66,7 +66,23 @@ void Hotel::checkIn(unsigned short int roomNumber, const Date& from, const Date&
 		std::cout << "Room is already taken in that period!\n";
 		return;
 	}
+	if (from >= to)
+	{
+		std::cout << "Invalid dates!\n";
+		return;
+	}
+	if (guests==0)
+	{ 
+		for (const auto& room : rooms)
+		{
+			if (room.getNumber() == roomNumber)
+			{
+				guests = room.getBeds();
+				break;
+			}
 
+		}
+	}
 	Booking booking(roomNumber, from, to, note, guests, true);
 	insertBookingSorted(booking);
 	std::cout << "Checked in successfully!\n";
@@ -118,15 +134,18 @@ void Hotel::checkOut(unsigned short int roomNumber)
 	std::cout << "No active booking found to check out!\n";
 }
 
-void Hotel::report(const Date& from, const Date& to) const {
-	for (const auto& room : rooms) {
+void Hotel::report(const Date& from, const Date& to) const
+{
+	for (const auto& room : rooms)
+	{
 		unsigned short int usedDays = 0;
 		for (const auto& b : bookings)
 		{
-			if (b.getEnd() < from) {
+			if (b.getEnd() < from)
+			{
 				break;
 			}
-			if (b.getRoomNumber() == room.getNumber())
+			if (b.getRoomNumber() == room.getNumber() && b.isAvailable() != false)
 			{
 				if (b.getStart() < to)
 				{

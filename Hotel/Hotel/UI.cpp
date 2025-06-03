@@ -116,47 +116,50 @@ void UI::processCommand(const std::string& commandLine)
             else if (command == "checkin")
             {
                 unsigned short int room, guests = 0;
-                std::string fromStr, toStr, message;
-                if (!(stream >> room >> fromStr >> toStr)) {
+                std::string fromStr, toStr;
+                std::string lineAfterDates;
+
+                if (!(stream >> room >> fromStr >> toStr))
+                {
                     std::cout << "Usage: checkin <room> <from> <to> <note> [<guests>]\n";
                     return;
                 }
 
-                std::getline(stream, message);
+                std::getline(stream, lineAfterDates);
+                size_t pos = lineAfterDates.find_first_not_of(' ');
+                if (pos != std::string::npos) lineAfterDates = lineAfterDates.substr(pos);
 
-                size_t pos = message.find_first_not_of(' ');
-                if (pos != std::string::npos) message = message.substr(pos);
+                std::istringstream iss(lineAfterDates);
+                std::string word, lastWord;
 
-                std::istringstream noteStream(message);
-                std::string lastToken;
+                while (iss >> word) lastWord = word;
+
                 bool hasGuests = false;
-                if (noteStream >> lastToken)
+                try
                 {
-                    try
-                    {
-                        guests = static_cast<unsigned short>(std::stoi(lastToken));
-                        hasGuests = true;
-                    }
-                    catch (...) { hasGuests = false; }
+                    guests = static_cast<unsigned short>(std::stoi(lastWord));
+                    hasGuests = true;
                 }
+                catch (...) {}
 
+                std::string note = lineAfterDates;
                 if (hasGuests)
                 {
-                    size_t lastSpace = message.find_last_of(' ');
-
+                    size_t lastSpace = note.find_last_of(' ');
                     if (lastSpace != std::string::npos)
-                        message = message.substr(0, lastSpace);
+                        note = note.substr(0, lastSpace);
                 }
 
                 try
                 {
-                    hotel.checkIn(room, Date(fromStr), Date(toStr), message, guests);
+                    Date from(fromStr);
+                    Date to(toStr);
+                    hotel.checkIn(room, from, to, note, guests);
                 }
                 catch (...)
                 {
                     std::cout << "Invalid date format.\n";
                 }
-
             }
             else if (command == "availability")
             {
