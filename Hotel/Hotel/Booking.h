@@ -9,9 +9,9 @@ private:
 	std::string message;
 	unsigned short int guests;
 	bool available;
+
 public:
     Booking(int roomNumber, const Date& from, const Date& to, const std::string& note, int guests = 0, bool available = 1);
-
     bool overlaps(const Date& start, const Date& end) const;
     bool isAvailable() const;
     unsigned short int getRoomNumber() const;

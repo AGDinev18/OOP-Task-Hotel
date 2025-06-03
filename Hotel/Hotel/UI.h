@@ -4,13 +4,16 @@
 
 class UI {
 private:
-    Hotel hotel;
     bool running;
+    bool fileOpened;
+    std::string currentFileName;
+    Hotel hotel;
 
+    void requireFileOpened() const;
     void showHelp() const;
-    void processCommand(const std::string& commandLine);
 
 public:
     UI();
     void run();
+    void processCommand(const std::string& commandLine);
 };

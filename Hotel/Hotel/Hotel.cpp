@@ -40,6 +40,11 @@ void Hotel::insertBookingSorted(const Booking& booking) {
 
 void Hotel::addRoom(unsigned short int roomNumber, unsigned short int beds)
 {
+	if (roomNumber < 0)
+	{
+		std::cout << "Room has to be positive number";
+		return;
+	}
 	if (checkIfRoomExists(roomNumber))
 	{
 		std::cout << "Room already exists!\n";
@@ -204,7 +209,86 @@ void Hotel::find(unsigned short int beds, const Date& from, const Date& to) cons
 
 void Hotel::findSpecial(unsigned short int beds, const Date& from, const Date& to) const
 {
+	for (const auto& targetRoom : rooms)
+	{
+		if (targetRoom.getBeds() >= beds)
+		{
+			std::vector<const Booking*> conflicts;
 
+			for (const auto& b : bookings)
+			{
+				if (b.getRoomNumber() == targetRoom.getNumber())
+				{
+					if (b.overlaps(from, to))
+					{
+						conflicts.push_back(&b);
+					}
+				}
+			}
+
+			if (conflicts.size() != 0 && conflicts.size() <= 2)
+			{
+
+				std::vector<std::pair<const Booking*, const Room*>> relocations;
+				bool canRelocate = true;
+
+				for (const auto conflict : conflicts) {
+					const Room* relocationTarget = nullptr;
+
+					for (const auto& otherRoom : rooms) {
+						if (otherRoom.getNumber() != targetRoom.getNumber())
+						{
+							if (otherRoom.getBeds() >= conflict->getGuests())
+							{
+								bool available = true;
+								for (const auto& booking : bookings)
+								{
+									if (booking.getRoomNumber() == otherRoom.getNumber())
+									{
+										if (booking.overlaps(conflict->getStart(), conflict->getEnd()))
+										{
+											available = false;
+											break;
+										}
+									}
+								}
+
+								if (available)
+								{
+									relocationTarget = &otherRoom;
+									break;
+								}
+							}
+						}
+					}
+
+					if (!relocationTarget)
+					{
+						canRelocate = false;
+						break;
+					}
+
+					relocations.emplace_back(conflict, relocationTarget);
+				}
+
+				if (canRelocate)
+				{
+					std::cout << "Special guest can be placed in Room " << targetRoom.getNumber() << " by relocating:\n";
+					for (const auto& move : relocations)
+					{
+						std::cout << "- Booking from Room " << move.first->getRoomNumber()
+							<< " (Guests: " << move.first->getGuests()
+							<< ", " << move.first->getStart().toString()
+							<< " to " << move.first->getEnd().toString() << ") "
+							<< "-> move to Room " << move.second->getNumber() << "\n";
+					}
+					return;
+				}
+			}
+		}
+	}
+
+	std::cout << "No solution found. Cannot relocate guests within constraints.\n";
 }
 
 void Hotel::unavailable(unsigned short int roomNumber, const Date& from, const Date& to, const std::string& note)
@@ -218,8 +302,6 @@ void Hotel::unavailable(unsigned short int roomNumber, const Date& from, const D
 	Booking newBooking(roomNumber, from, to, note, 0, false);
 
 	insertBookingSorted(newBooking);
-
-	std::cout << "Room marked as unavailable!\n";
 }
 
 void Hotel::openFile(const std::string& fileName)
@@ -236,7 +318,6 @@ void Hotel::openFile(const std::string& fileName)
 			return;
 		}
 		createFile.close();
-		std::cout << "Successfully created " << fileName << "\n";
 		rooms.clear();
 		bookings.clear();
 		return;
@@ -283,29 +364,15 @@ void Hotel::openFile(const std::string& fileName)
 	}
 
 	file.close();
-	currentFileName = fileName;
-	std::cout << "Successfully opened " << currentFileName << "\n";
 }
 
 void Hotel::saveFile(const std::string& fileName) const
 {
-	std::string targetFile = fileName;
-
-	if (targetFile.empty())
-	{
-		if (currentFileName.empty())
-		{
-			std::cout << "No file opened or specified to save!\n";
-			return;
-		}
-		targetFile = currentFileName;
-	}
-
-	std::ofstream file(targetFile);
+	std::ofstream file(fileName);
 
 	if (!file.is_open())
 	{
-		std::cout << "Could not save to file " << targetFile << "\n";
+		std::cout << "Could not save to file " << fileName << "\n";
 		return;
 	}
 
@@ -327,13 +394,4 @@ void Hotel::saveFile(const std::string& fileName) const
 	}
 
 	file.close();
-	std::cout << "Successfully saved " << targetFile << "\n";
-}
-
-void Hotel::closeFile()
-{
-	rooms.clear();
-	bookings.clear();
-	std::cout << "Successfully closed " << currentFileName << "\n";
-	currentFileName.clear();
 }
