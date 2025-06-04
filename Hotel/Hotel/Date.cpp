@@ -173,6 +173,7 @@ Date Date::today()
 
 	return Date(timeInfo.tm_year + 1900, timeInfo.tm_mon + 1, timeInfo.tm_mday);
 }
+
 int Date::daysSinceMarchFirst() const
 {
 	int y = year;

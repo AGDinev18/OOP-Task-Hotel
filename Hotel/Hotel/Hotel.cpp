@@ -470,6 +470,7 @@ void Hotel::changeRoom(const unsigned short int roomNumber, const Date& from, co
 		}
 	}
 }
+
 void Hotel::checkins() const
 {
 	for (auto& booking : bookings)

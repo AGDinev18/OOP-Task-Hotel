@@ -27,5 +27,5 @@ public:
 	void openFile(const std::string& fileName); // Loads the data of a given file into the memory or creates a file if the fileName is not existing
 	void saveFile(const std::string& fileName) const; // Saves the memory into file with the given fileName
 	void changeRoom(const unsigned short int roomNumber, const Date& from, const Date& to, const unsigned short int newRoomNumber); // Sets roomNumber = newRoomNumber for the booking with roomNumber from a period of Date from to Date to 
-	void checkins() const;
+	void checkins() const; // Shows all the active checkins
 };
