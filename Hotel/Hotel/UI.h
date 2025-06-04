@@ -9,11 +9,11 @@ private:
     std::string currentFileName;
     Hotel hotel;
 
-    void requireFileOpened() const;
-    void showHelp() const;
+    void requireFileOpened() const; // Requires an opened file
+    void showHelp() const; // Prints the list of possible commands
 
 public:
-    UI();
-    void run();
-    void processCommand(const std::string& commandLine);
+    UI(); // Constructor to create object
+    void run(); // Main method to start running the app
+    void processCommand(const std::string& commandLine); // Handles the given command
 };

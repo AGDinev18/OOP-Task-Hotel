@@ -29,6 +29,16 @@ bool Hotel::checkIfRoomIsTaken(unsigned short int roomNumber, const Date& from, 
 	return false;
 }
 
+void Hotel::insertRoomSorted(const Room& room)
+{
+	auto it = rooms.begin();
+	while (it != rooms.end() && it->getBeds() <= room.getBeds())
+	{
+		++it;
+	}
+	rooms.insert(it, room);
+}
+
 void Hotel::insertBookingSorted(const Booking& booking) {
 	auto it = bookings.begin();
 	while (it != bookings.end() && it->getEnd() > booking.getEnd())
@@ -38,19 +48,21 @@ void Hotel::insertBookingSorted(const Booking& booking) {
 	bookings.insert(it, booking);
 }
 
+Hotel::~Hotel()
+{
+	rooms.clear();
+	bookings.clear();
+}
+
 void Hotel::addRoom(unsigned short int roomNumber, unsigned short int beds)
 {
-	if (roomNumber < 0)
-	{
-		std::cout << "Room has to be positive number";
-		return;
-	}
 	if (checkIfRoomExists(roomNumber))
 	{
 		std::cout << "Room already exists!\n";
 		return;
 	}
-	rooms.emplace_back(roomNumber, beds);
+	Room room(roomNumber, beds);
+	insertRoomSorted(room);
 	std::cout << "Room added successfully!\n";
 }
 
@@ -66,10 +78,20 @@ void Hotel::checkIn(unsigned short int roomNumber, const Date& from, const Date&
 		std::cout << "Room is already taken in that period!\n";
 		return;
 	}
-	if (from >= to)
+	for (const auto& room : rooms)
 	{
-		std::cout << "Invalid dates!\n";
-		return;
+		if (room.getNumber() == roomNumber)
+		{
+			if (guests > room.getBeds())
+			{
+				std::cout << "Not enough beds!\n";
+				return;
+			}
+			else if (guests == 0)
+			{
+				guests = room.getBeds();
+			}
+		}
 	}
 	if (guests==0)
 	{ 
@@ -80,7 +102,6 @@ void Hotel::checkIn(unsigned short int roomNumber, const Date& from, const Date&
 				guests = room.getBeds();
 				break;
 			}
-
 		}
 	}
 	Booking booking(roomNumber, from, to, note, guests, true);
@@ -183,6 +204,10 @@ void Hotel::find(unsigned short int beds, const Date& from, const Date& to) cons
 
 			for (const auto& booking : bookings)
 			{
+				if (booking.getEnd() <= from)
+				{
+					break;
+				}
 				if (booking.getRoomNumber() == room.getNumber())
 				{
 					if (booking.overlaps(from, to))
@@ -197,20 +222,6 @@ void Hotel::find(unsigned short int beds, const Date& from, const Date& to) cons
 				suitableRooms.push_back(room);
 			}
 		}
-	}
-
-	// Insertion sort by number of beds (ascending)
-	for (size_t i = 1; i < suitableRooms.size(); i++)
-	{
-		Room key = suitableRooms[i];
-		int j = i - 1;
-
-		while (j >= 0 && suitableRooms[j].getBeds() > key.getBeds())
-		{
-			suitableRooms[j + 1] = suitableRooms[j];
-			--j;
-		}
-		suitableRooms[j + 1] = key;
 	}
 
 	if (suitableRooms.empty())
@@ -236,6 +247,10 @@ void Hotel::findSpecial(unsigned short int beds, const Date& from, const Date& t
 
 			for (const auto& b : bookings)
 			{
+				if (b.getEnd() <= from)
+				{
+					break;
+				}
 				if (b.getRoomNumber() == targetRoom.getNumber())
 				{
 					if (b.overlaps(from, to))
@@ -262,6 +277,10 @@ void Hotel::findSpecial(unsigned short int beds, const Date& from, const Date& t
 								bool available = true;
 								for (const auto& booking : bookings)
 								{
+									if (booking.getEnd() < from)
+									{
+										break;
+									}
 									if (booking.getRoomNumber() == otherRoom.getNumber())
 									{
 										if (booking.overlaps(conflict->getStart(), conflict->getEnd()))
@@ -325,64 +344,72 @@ void Hotel::unavailable(unsigned short int roomNumber, const Date& from, const D
 
 void Hotel::openFile(const std::string& fileName)
 {
-	std::ifstream file(fileName);
-
-	if (!file.is_open())
+	try
 	{
-		std::ofstream createFile(fileName);
+		std::ifstream file(fileName);
 
-		if (!createFile)
+		if (!file.is_open())
 		{
-			std::cout << "Could not create file!\n";
+			std::ofstream createFile(fileName);
+
+			if (!createFile)
+			{
+				std::cout << "Could not create file!\n";
+				return;
+			}
+			createFile.close();
+			rooms.clear();
+			bookings.clear();
 			return;
 		}
-		createFile.close();
+
 		rooms.clear();
 		bookings.clear();
-		return;
-	}
 
-	rooms.clear();
-	bookings.clear();
-
-	std::string line;
-	while (std::getline(file, line))
-	{
-		if (line == "#BOOKINGS#")
-			break;
-
-		std::istringstream iss(line);
-		unsigned short int roomNumber, beds;
-
-		if (!(iss >> roomNumber >> beds))
+		std::string line;
+		while (std::getline(file, line))
 		{
-			std::cout << "Error reading room data.\n";
-			file.close();
-			exit(1);
+			if (line == "#BOOKINGS#")
+				break;
+
+			std::istringstream iss(line);
+			unsigned short int roomNumber, beds;
+
+			if (!(iss >> roomNumber >> beds))
+			{
+				std::cout << "Error reading room data!\n";
+				file.close();
+				exit(1);
+			}
+			rooms.emplace_back(roomNumber, beds);
 		}
-		rooms.emplace_back(roomNumber, beds);
-	}
 
-	while (std::getline(file, line))
-	{
-		std::istringstream iss(line);
-		unsigned short int roomNumber, guests;
-		std::string fromStr, toStr, message;
-		bool availability;
-
-		if (!(iss >> roomNumber >> fromStr >> toStr >> guests >> availability))
+		while (std::getline(file, line))
 		{
-			std::cout << "Error reading booking data.\n";
-			file.close();
-			exit(1);
+			std::istringstream iss(line);
+			unsigned short int roomNumber, guests;
+			std::string fromStr, toStr, message;
+			bool availability;
+
+			if (!(iss >> roomNumber >> fromStr >> toStr >> guests >> availability))
+			{
+				std::cout << "Error reading booking data!\n";
+				file.close();
+				exit(1);
+			}
+			std::getline(iss, message);
+			if (!message.empty() && message[0] == ' ') message.erase(0, 1);
+
+			bookings.emplace_back(roomNumber, Date(fromStr), Date(toStr), message, guests, availability);
 		}
-		std::getline(iss, message);
-		if (!message.empty() && message[0] == ' ') message.erase(0, 1);
 
-		bookings.emplace_back(roomNumber, Date(fromStr), Date(toStr), message, guests, availability);
+		file.close();
 	}
-
-	file.close();
+	catch (...)
+	{
+		std::cout << "Error reading data!\n";
+		exit(1);
+	}
 }
 
 void Hotel::saveFile(const std::string& fileName) const
@@ -391,7 +418,7 @@ void Hotel::saveFile(const std::string& fileName) const
 
 	if (!file.is_open())
 	{
-		std::cout << "Could not save to file " << fileName << "\n";
+		std::cout << "Cannot save to file " << fileName << "\n";
 		return;
 	}
 
@@ -413,4 +440,27 @@ void Hotel::saveFile(const std::string& fileName) const
 	}
 
 	file.close();
+}
+
+void Hotel::changeRoom(const unsigned short int roomNumber, const Date& from, const Date& to, const unsigned short int newRoomNumber)
+{
+	for (auto& booking : bookings)
+	{
+		if (booking.getEnd() < from)
+		{
+			break;
+		}
+		if (booking.getRoomNumber() == roomNumber && booking.getStart()==from && booking.getEnd()==to)
+		{
+			if (checkIfRoomIsTaken(newRoomNumber, from, to))
+			{
+				std::cout << "The room is already taken in that period!\n";
+				return;
+			}
+			else
+			{
+				booking.setRoomNumber(newRoomNumber);
+			}
+		}
+	}
 }

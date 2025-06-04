@@ -8,7 +8,7 @@ bool Booking::isAvailable() const { return available; }
 unsigned short int Booking::getRoomNumber() const { return roomNumber; }
 unsigned short int Booking::getGuests() const { return guests; }
 unsigned short int Booking::getDuration() const { return from.daysUntil(to); }
-const Date& Booking::getStart() const { return from; }
+const Date& Booking::getStart() const { return from; } 
 const Date& Booking::getEnd() const { return to; }
 void Booking::setStart(const Date& f) { from = f; }
 void Booking::setEnd(const Date& t) { to = t; }
