@@ -245,17 +245,17 @@ void Hotel::findSpecial(unsigned short int beds, const Date& from, const Date& t
 		{
 			std::vector<const Booking*> conflicts;
 
-			for (const auto& b : bookings)
+			for (const auto& booking : bookings)
 			{
-				if (b.getEnd() <= from)
+				if (booking.getEnd() <= from)
 				{
 					break;
 				}
-				if (b.getRoomNumber() == targetRoom.getNumber())
+				if (booking.getRoomNumber() == targetRoom.getNumber() && booking.isAvailable() != false)
 				{
-					if (b.overlaps(from, to))
+					if (booking.overlaps(from, to))
 					{
-						conflicts.push_back(&b);
+						conflicts.push_back(&booking);
 					}
 				}
 			}
@@ -281,7 +281,7 @@ void Hotel::findSpecial(unsigned short int beds, const Date& from, const Date& t
 									{
 										break;
 									}
-									if (booking.getRoomNumber() == otherRoom.getNumber())
+									if (booking.getRoomNumber() == otherRoom.getNumber() && booking.isAvailable()!=false)
 									{
 										if (booking.overlaps(conflict->getStart(), conflict->getEnd()))
 										{
@@ -336,10 +336,16 @@ void Hotel::unavailable(unsigned short int roomNumber, const Date& from, const D
 		std::cout << "Room does not exist!\n";
 		return;
 	}
+	if (checkIfRoomIsTaken(roomNumber, from, to))
+	{
+		std::cout << "Room is not available in that period!\n";
+		return;
+	}
 
 	Booking newBooking(roomNumber, from, to, note, 0, false);
 
 	insertBookingSorted(newBooking);
+	std::cout << "The room will be unavailable for this period!\n";
 }
 
 void Hotel::openFile(const std::string& fileName)
@@ -462,5 +468,16 @@ void Hotel::changeRoom(const unsigned short int roomNumber, const Date& from, co
 				booking.setRoomNumber(newRoomNumber);
 			}
 		}
+	}
+}
+void Hotel::checkins() const
+{
+	for (auto& booking : bookings)
+	{
+		if (booking.getEnd() < Date::today())
+		{
+			break;
+		}
+		std::cout << "Room " << booking.getRoomNumber() << " From " << booking.getStart().toString() << " to " << booking.getEnd().toString() << " note: " << booking.getMessage() << " has " << booking.getGuests() << " guests\n";
 	}
 }

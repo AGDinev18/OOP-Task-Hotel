@@ -31,6 +31,7 @@ void UI::showHelp() const
 		<< " |  unavailable <room> <from> <to> <note>          room cannot be in use in the period        |\n"
 		<< " |  addroom <room> <beds>                          registers a room                           |\n"
 		<< " |  changeroom <room> <newRoomNumber> <from> <to>  changes room to newRoom in the booking     |\n"
+		<< " |  checkins                                       shows a list of active reservations        |\n"
 		<< " |--------------------------------------------------------------------------------------------|\n";
 }
 
@@ -174,7 +175,7 @@ void UI::processCommand(const std::string& commandLine)
 
 				if (Date(fromStr) < Date::today())
 				{
-					std::cout << "Cannot make booking with outdated date!\nEarliest possible date to book is: " << Date::today().toString() << std::endl;
+					std::cout << "Cannot make reservation with outdated date!\nEarliest possible date to book is: " << Date::today().toString() << std::endl;
 					return;
 				}
 
@@ -357,10 +358,20 @@ void UI::processCommand(const std::string& commandLine)
 					std::cout << "Invalid dates!\n";
 					return;
 				}
+				if (Date(fromStr) < Date::today())
+				{
+					std::cout << "Cannot change room state with outdated date!\nEarliest possible date to change is: " << Date::today().toString() << std::endl;
+					return;
+				}
 				std::getline(stream, message);
 				size_t pos = message.find_first_not_of(' ');
 				if (pos != std::string::npos)
 					message = message.substr(pos);
+				if (message.empty() || message.find_first_not_of(' ') == std::string::npos)
+				{
+					std::cout << "There is no message!\n";
+					return;
+				}
 				try
 				{
 					hotel.unavailable(room, Date(fromStr), Date(toStr), message);
@@ -370,6 +381,10 @@ void UI::processCommand(const std::string& commandLine)
 					std::cout << "Invalid date format!\n";
 				}
 
+			}
+			else if (command == "checkins")
+			{
+				hotel.checkins();
 			}
 			else
 			{
@@ -398,5 +413,5 @@ void UI::run()
 			processCommand(line);
 	}
 
-	std::cout << "Thanks for working with Hotel Management System!\n";
+	std::cout << "Thanks for working with our Hotel Management System!\n";
 }
