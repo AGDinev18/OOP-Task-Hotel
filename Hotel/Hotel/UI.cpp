@@ -27,7 +27,7 @@ void UI::showHelp() const
 		<< " |  checkout <room>                                frees a room                               |\n"
 		<< " |  report <from> <to>                             prints information about usage of rooms    |\n"
 		<< " |  find <beds> <from> <to>                        finds rooms with enough beds in the period |\n"
-		<< " |  find! <beds> <from> <to>                       tries to make a room free if there is none |\n"
+		<< " |  find! <beds> <from> <to>                       tries to make a room free if there is not  |\n"
 		<< " |  unavailable <room> <from> <to> <note>          room cannot be in use in the period        |\n"
 		<< " |  addroom <room> <beds>                          registers a room                           |\n"
 		<< " |  changeroom <room> <newRoomNumber> <from> <to>  changes room to newRoom in the booking     |\n"

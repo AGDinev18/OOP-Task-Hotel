@@ -13,6 +13,7 @@ private:
 	bool checkIfRoomIsTaken(unsigned short int roomNumber,const Date& from,const Date& to); // Checks if the room is taken in a given period Date from to Date to
 	void insertRoomSorted(const Room& room); // Sorts the new room into the vector of rooms
 	void insertBookingSorted(const Booking& booking); // Sorts the new booking into the vector of bookings
+
 public:
 	~Hotel(); // Destructor which clears rooms and bookings
 	void addRoom(unsigned short int roomNumber, unsigned short int beds); // Adds a room
