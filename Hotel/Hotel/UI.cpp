@@ -14,24 +14,24 @@ void UI::requireFileOpened() const
 void UI::showHelp() const
 {
 	std::cout
-		<< "\n |                    COMMANDS                    |\n"
-		<< " |------------------------------------------------|\n"
-		<< " |  open <filename>                               |\n"
-		<< " |  close                                         |\n"
-		<< " |  save                                          |\n"
-		<< " |  saveas <filename>                             |\n"
-		<< " |  addroom <room> <beds>                         |\n"
-		<< " |  changeroom <room> <newRoomNumber> <from> <to>  |\n"
-		<< " |  checkin <room> <from> <to> <note> [<guests>]  |\n"
-		<< " |  checkout <room>                               |\n"
-		<< " |  availability [<date>]                         |\n"
-		<< " |  report <from> <to>                            |\n"
-		<< " |  find <beds> <from> <to>                       |\n"
-		<< " |  find! <beds> <from> <to>                      |\n"
-		<< " |  unavailable <room> <from> <to> <note>         |\n"
-		<< " |  help                                          |\n"
-		<< " |  exit                                          |\n"
-		<< " | Dates must be in format: YYYY-MM-DD            |\n";
+		<< "\n |                                         COMMANDS                                           |\n"
+		<< " |--------------------------------------------------------------------------------------------|\n"
+		<< " |  open <file>                                    opens <file>                               |\n"
+		<< " |  close                                          closes currently opened file               |\n"
+		<< " |  save                                           saves the currently open file              |\n"
+		<< " |  saveas <filename>                              saves the currently open file in <file>    |\n"
+		<< " |  help                                           prints this information                    |\n"
+		<< " |  exit                                           exists the program                         |\n"
+		<< " |  checkin <room> <from> <to> <note> [<guests>]   makes a reservation                        |\n"
+		<< " |  availability [<date>]                          prints a list with free rooms at date      |\n"
+		<< " |  checkout <room>                                frees a room                               |\n"
+		<< " |  report <from> <to>                             prints information about usage of rooms    |\n"
+		<< " |  find <beds> <from> <to>                        finds rooms with enough beds in the period |\n"
+		<< " |  find! <beds> <from> <to>                       tries to make a room free if there is none |\n"
+		<< " |  unavailable <room> <from> <to> <note>          room cannot be in use in the period        |\n"
+		<< " |  addroom <room> <beds>                          registers a room                           |\n"
+		<< " |  changeroom <room> <newRoomNumber> <from> <to>  changes room to newRoom in the booking     |\n"
+		<< " |--------------------------------------------------------------------------------------------|\n";
 }
 
 void UI::processCommand(const std::string& commandLine)
@@ -386,7 +386,8 @@ void UI::processCommand(const std::string& commandLine)
 
 void UI::run()
 {
-	std::cout << "<Hotel Management System>\n  Type \"help\" to see the commands!\n";
+	std::cout << "                                   <Hotel Management System>\n";
+	showHelp();
 
 	while (running)
 	{
